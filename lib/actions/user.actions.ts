@@ -19,20 +19,33 @@ export async function createUser(user: CreateUserParams) {
   }
 }
 
-// READ
+
+// READ or CREATE if not found
 export async function getUserById(userId: string) {
   try {
     await connectToDatabase();
+    let user = await User.findOne({ clerkId: userId });
 
-    const user = await User.findOne({ clerkId: userId });
-
-    if (!user) throw new Error("User not found");
+    // If user is not found, create a new user
+    if (!user) {
+      // Create a new user with minimal required properties
+      user = await createUser({
+        clerkId: userId,
+        email: "", // Add other required properties here
+        username: "",
+        firstName: "",
+        lastName: "",
+        photo: "" // Assign an empty string or specify a default photo
+      });
+    }
 
     return JSON.parse(JSON.stringify(user));
   } catch (error) {
     handleError(error);
   }
 }
+
+
 
 // UPDATE
 export async function updateUser(clerkId: string, user: UpdateUserParams) {
